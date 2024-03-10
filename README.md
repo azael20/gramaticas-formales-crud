@@ -1,30 +1,32 @@
-# React + TypeScript + Vite
+# Proyecto de Teoría de Autómatas - Gramáticas Formales en React
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Objetivo
 
-Currently, two official plugins are available:
+El objetivo de este proyecto es desarrollar un programa en React que facilite el uso de gramáticas formales. Este proyecto es parte de la materia de Teoría de Autómatas de la universidad.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Tecnologías Utilizadas
 
-## Expanding the ESLint configuration
+- **Lenguaje:** TypeScript
+- **Librerías:**
+  - React
+  - Tailwind CSS
+  - Rewind UI
+- **Herramienta de desarrollo:** Vite
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+## Funcionalidades
 
-- Configure the top-level `parserOptions` property like this:
+El programa ofrece las siguientes funcionalidades:
 
-```js
-export default {
-  // other rules...
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-  },
-}
-```
+1. Crear, modificar, guardar, cargar y eliminar gramáticas formales.
 
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+## Instrucciones de Ejecución
+
+1. Clona o descarga el repositorio.
+2. Instala las dependencias utilizando el siguiente comando:
+
+   ```bash
+   npm install
+
+3. Ejecuta el proyecto utilizando el siguiente comando:
+   ```bash
+   npm run dev
