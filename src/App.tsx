@@ -1,6 +1,6 @@
 import { ChangeEvent, useRef, useState } from "react";
 import { Card } from "./components/Card"
-import { Button, Modal } from "@rewind-ui/core";
+import { Button, Modal, ToastContainer, useToast } from "@rewind-ui/core";
 import { saveAs } from 'file-saver';
 
 interface Rule {
@@ -24,6 +24,7 @@ const App = () => {
   const [openEditRuleModal, setOpenEditRuleModal] = useState<boolean>(false);
   const [rulePosition, setRulePosition] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const toast = useToast();
 
   function hasNumber(myString: string) {
     console.log(/\d/.test(myString));
@@ -40,24 +41,51 @@ const App = () => {
 
     for (let i = 0; i < grammar.rules.length; i++) {
       const rule = grammar.rules[i];
-      console.log('hola');
       if (rule.leftSide.length > rule.rightSide.length) {
         console.log('Tipo 0');
+        toast.add({
+          id: 'type-0',
+          color: 'purple',
+          description: 'Tipo 0',
+          duration: 10000,
+          radius: 'lg',
+        });
         foundType = true;
         break;
       }
       else if (hasNumber(rule.leftSide) || hasLowerCase(rule.leftSide)) {
         console.log('Tipo 1');
+        toast.add({
+          id: 'type-1',
+          color: 'purple',
+          description: 'Tipo 1',
+          duration: 10000,
+          radius: 'lg',
+        });
         foundType = true;
         break;
       }
       else if (rule.rightSide.startsWith(rule.leftSide)) {
         console.log('Tipo 3 Izquierda');
+        toast.add({
+          id: 'type-3-left',
+          color: 'purple',
+          description: 'Tipo 3 Lineal Izquierda',
+          duration: 10000,
+          radius: 'lg',
+        });
         foundType = true;
         break;
       }
       else if (rule.rightSide.endsWith(rule.leftSide)) {
         console.log('Tipo 3 Derecha');
+        toast.add({
+          id: 'type-3-right',
+          color: 'purple',
+          description: 'Tipo 3 Lineal Derecha',
+          duration: 10000,
+          radius: 'lg',
+        });
         foundType = true;
         break;
       }
@@ -65,6 +93,13 @@ const App = () => {
 
     if (!foundType) {
       console.log('Tipo 2');
+      toast.add({
+        id: 'type-2',
+        color: 'purple',
+        description: 'Tipo 2',
+        duration: 10000,
+        radius: 'lg',
+      });
     }
   }
 
@@ -367,6 +402,7 @@ const App = () => {
           </form>
         </div>
       </Modal>
+      <ToastContainer />
     </div>
   )
 }
