@@ -4,8 +4,8 @@ import { Button, Modal } from "@rewind-ui/core";
 import { saveAs } from 'file-saver';
 
 interface Rule {
-  nonTerminal: string;
-  production: string;
+  leftSide: string;
+  rightSide: string;
 }
 
 interface Grammar {
@@ -16,23 +16,60 @@ interface Grammar {
 const App = () => {
   const [openModal, setOpenModal] = useState<boolean>(false);
   const [name, setName] = useState<string>('');
-  const [nonTerminal, setNonTerminal] = useState<string>('');
-  const [production, setProduction] = useState<string>('');
+  const [leftSide, setLeftSide] = useState<string>('');
+  const [rightSide, setRightSide] = useState<string>('');
   const [rules, setRules] = useState<Rule[]>([])
   const [grammars, setGrammars] = useState<Grammar[]>([]);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [openEditRuleModal, setOpenEditRuleModal] = useState<boolean>(false);
-  const [selectedFile, setSelectedFile] = useState<null | File>(null);
   const [rulePosition, setRulePosition] = useState<number | null>(null);
-  const inputRef = useRef<any>();
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const result = event.target.value.replace(/[^a-z]/gi, '');
-    setNonTerminal(result);
+  function hasNumber(myString: string) {
+    console.log(/\d/.test(myString));
+    return /\d/.test(myString);
+  }
+
+  function hasLowerCase(myString: string) {
+    console.log(/[a-z]/.test(myString));
+    return (/[a-z]/.test(myString));
+  }
+
+  const getTypeOfGrammar = (grammar: Grammar) => {
+    let foundType = false;
+
+    for (let i = 0; i < grammar.rules.length; i++) {
+      const rule = grammar.rules[i];
+      console.log('hola');
+      if (rule.leftSide.length > rule.rightSide.length) {
+        console.log('Tipo 0');
+        foundType = true;
+        break;
+      }
+      else if (hasNumber(rule.leftSide) || hasLowerCase(rule.leftSide)) {
+        console.log('Tipo 1');
+        foundType = true;
+        break;
+      }
+      else if (rule.rightSide.startsWith(rule.leftSide)) {
+        console.log('Tipo 3 Izquierda');
+        foundType = true;
+        break;
+      }
+      else if (rule.rightSide.endsWith(rule.leftSide)) {
+        console.log('Tipo 3 Derecha');
+        foundType = true;
+        break;
+      }
+    }
+
+    if (!foundType) {
+      console.log('Tipo 2');
+    }
   }
 
   const blobParts = grammars.map(grammar => {
-    const ruleStrings = grammar.rules.map(rule => `${rule.nonTerminal} -> ${rule.production}`);
+    const ruleStrings = grammar.rules.map(rule => `${rule.leftSide} -> ${rule.rightSide}`);
     return `${grammar.name}\n\n${ruleStrings.join('\n')}`;
   });
 
@@ -42,9 +79,10 @@ const App = () => {
   }
 
   const loadFile = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files[0];
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
 
-    if (!file) return;
+    const file = files[0];
 
     const fileReader = new FileReader();
     fileReader.readAsText(file);
@@ -58,8 +96,8 @@ const App = () => {
 
       // Procesar las reglas y crear una gramática
       const rulesFromFile: Rule[] = ruleLines.map(rule => {
-        const [nonTerminal, production] = rule.trim().split('->').map(part => part.trim());
-        return { nonTerminal, production };
+        const [leftSide, rightSide] = rule.trim().split('->').map(part => part.trim());
+        return { leftSide, rightSide };
       });
 
       // Crear la gramática con todas las reglas
@@ -78,7 +116,7 @@ const App = () => {
   }
 
   const onChooseFile = () => {
-    inputRef.current.click();
+    inputRef.current?.click();
   };
 
 
@@ -89,8 +127,8 @@ const App = () => {
           onClick={() => {
             setIsEditing(false);
             setName('');
-            setNonTerminal('');
-            setProduction('');
+            setLeftSide('');
+            setRightSide('');
             setRules([]);
             setOpenModal(true);
           }}
@@ -115,6 +153,7 @@ const App = () => {
         {grammars.map((grammar, index) => (
           <Card
             onSaveChanges={() => createFile(index)}
+            onGetTypeChanges={() => getTypeOfGrammar(grammar)}
             onDeleteChanges={() => {
               const newGrammars = grammars.filter((_, i) => i !== index);
               setGrammars(newGrammars);
@@ -124,8 +163,8 @@ const App = () => {
               setOpenModal(true);
               setName(grammar.name);
               setRules(grammar.rules);
-              setNonTerminal('');
-              setProduction('');
+              setLeftSide('');
+              setRightSide('');
             }}
             key={index}
             grammarName={grammar.name}
@@ -166,14 +205,13 @@ const App = () => {
             />
             <div className="flex w-full items-center">
               <div className="flex flex-row gap-x-1">
-                <Button onClick={() => setNonTerminal('Σ')} className="bg-slate-800">
+                <Button onClick={() => setLeftSide('Σ')} className="bg-slate-800">
                   Σ
                 </Button>
                 <input
-                  maxLength={1}
                   type="text"
-                  onChange={(e) => handleChange(e)}
-                  value={nonTerminal}
+                  onChange={(e) => setLeftSide(e.target.value)}
+                  value={leftSide}
                   className="w-full p-2 rounded-md border-zinc-50 border"
                 />
               </div>
@@ -181,10 +219,10 @@ const App = () => {
               <div className="flex flex-row gap-x-1">
                 <input
                   type="text"
-                  onChange={(e) => setProduction(e.target.value)}
-                  value={production} className="w-full p-2 rounded-md border-zinc-50 border"
+                  onChange={(e) => setRightSide(e.target.value)}
+                  value={rightSide} className="w-full p-2 rounded-md border-zinc-50 border"
                 />
-                <Button onClick={() => setProduction('λ')} className="bg-slate-800">
+                <Button onClick={() => setRightSide('λ')} className="bg-slate-800">
                   λ
                 </Button>
               </div>
@@ -192,9 +230,10 @@ const App = () => {
             <Button
               className="bg-blue-600 text-zinc-50 h-12 rounded-md"
               onClick={() => {
-                if (!nonTerminal || !production) return;
-                setRules(prevRules => [...prevRules, { nonTerminal, production }]);
-
+                if (!leftSide || !rightSide) return;
+                setRules(prevRules => [...prevRules, { leftSide, rightSide }]);
+                setLeftSide('');
+                setRightSide('');
               }}
             >
               Agregar regla
@@ -203,7 +242,7 @@ const App = () => {
               <p>Reglas creadas:</p>
               {rules.map((rule, index) => (
                 <div className="flex items-center" key={`r-${index}`}>
-                  <p key={index}>{index + 1}. {rule.nonTerminal} {'→'} {rule.production}</p>
+                  <p key={index}>{index + 1}. {rule.leftSide} {'→'} {rule.rightSide}</p>
                   <Button
                     className="rounded-full w-4 h-4 ml-2 bg-red-600 hover:bg-red-800 focus:bg-red-800 active:bg-red-500 text-xs p-2 "
                     onClick={() => {
@@ -218,8 +257,8 @@ const App = () => {
                     onClick={() => {
                       setRulePosition(index);
                       setOpenEditRuleModal(true)
-                      setNonTerminal(rule.nonTerminal);
-                      setProduction(rule.production);
+                      setLeftSide(rule.leftSide);
+                      setRightSide(rule.rightSide);
                     }}
                   >
                     Editar
@@ -241,8 +280,8 @@ const App = () => {
                   setGrammars(newGrammars);
                   setName('');
                   setRules([]);
-                  setNonTerminal('');
-                  setProduction('');
+                  setLeftSide('');
+                  setRightSide('');
                   setOpenModal(false);
                   setIsEditing(false);
                   return;
@@ -285,14 +324,13 @@ const App = () => {
           <form className="flex flex-col gap-4 mt-4">
             <div className="flex w-full items-center">
               <div className="flex flex-row gap-x-1">
-                <Button onClick={() => setNonTerminal('Σ')} className="bg-slate-800">
+                <Button onClick={() => setLeftSide('Σ')} className="bg-slate-800">
                   Σ
                 </Button>
                 <input
-                  maxLength={1}
                   type="text"
-                  onChange={(e) => handleChange(e)}
-                  value={nonTerminal}
+                  onChange={(e) => setLeftSide(e.target.value)}
+                  value={leftSide}
                   className="w-full p-2 rounded-md border-zinc-50 border"
                 />
               </div>
@@ -300,26 +338,26 @@ const App = () => {
               <div className="flex flex-row gap-x-1">
                 <input
                   type="text"
-                  onChange={(e) => setProduction(e.target.value)}
-                  value={production} className="w-full p-2 rounded-md border-zinc-50 border"
+                  onChange={(e) => setRightSide(e.target.value)}
+                  value={rightSide} className="w-full p-2 rounded-md border-zinc-50 border"
                 />
-                <Button onClick={() => setProduction('λ')} className="bg-slate-800">
+                <Button onClick={() => setRightSide('λ')} className="bg-slate-800">
                   λ
                 </Button>
               </div>
             </div>
             <Button
               onClick={() => {
-                if (!nonTerminal || !production) return;
+                if (!leftSide || !rightSide) return;
                 const newRules = rules.map((rule, index) => {
                   if (index === rulePosition) {
-                    return { nonTerminal, production };
+                    return { leftSide, rightSide };
                   }
                   return rule;
                 });
                 setRules(newRules);
-                setNonTerminal('');
-                setProduction('');
+                setLeftSide('');
+                setRightSide('');
                 setOpenEditRuleModal(false);
               }}
               className="bg-green-600 text-zinc-50 h-12 rounded-md"
